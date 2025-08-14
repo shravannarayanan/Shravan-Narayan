@@ -54,7 +54,7 @@
             font-size: 1.1em;
         }
 
-        input[type="password"] {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 15px;
             border: 2px solid #e1e5e9;
@@ -68,7 +68,7 @@
             appearance: none;
         }
 
-        input[type="password"]:focus {
+        input[type="text"]:focus, input[type="password"]:focus {
             border-color: #667eea;
             transform: scale(1.02);
         }
@@ -131,6 +131,37 @@
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
+        }
+
+        .accuracy {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            display: none;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            color: #495057;
+        }
+
+        .accuracy.high {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .accuracy.medium {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .accuracy.low {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-color: #dc3545;
+            color: #721c24;
         }
 
         .attempts {
@@ -210,6 +241,12 @@
                 font-size: 14px;
             }
 
+            .accuracy {
+                margin-top: 12px;
+                padding: 10px;
+                font-size: 14px;
+            }
+
             .attempts {
                 margin-top: 15px;
                 font-size: 13px;
@@ -250,6 +287,11 @@
             .result {
                 padding: 12px;
                 font-size: 13px;
+            }
+
+            .accuracy {
+                padding: 8px;
+                font-size: 12px;
             }
         }
 
@@ -319,13 +361,13 @@
                 color: #cccccc;
             }
 
-            input[type="password"] {
+            input[type="text"], input[type="password"] {
                 background: #2a2a2a;
                 border-color: #444444;
                 color: #ffffff;
             }
 
-            input[type="password"]:focus {
+            input[type="text"]:focus, input[type="password"]:focus {
                 border-color: #667eea;
                 background: #333333;
             }
@@ -342,6 +384,30 @@
                 border-color: #5a2d2d;
             }
 
+            .accuracy {
+                background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+                border-color: #444444;
+                color: #cccccc;
+            }
+
+            .accuracy.high {
+                background: linear-gradient(135deg, #1e4d2b 0%, #0d2d1a 100%);
+                border-color: #28a745;
+                color: #d4edda;
+            }
+
+            .accuracy.medium {
+                background: linear-gradient(135deg, #4d3e1e 0%, #2d2d0d 100%);
+                border-color: #ffc107;
+                color: #fff3cd;
+            }
+
+            .accuracy.low {
+                background: linear-gradient(135deg, #4d1e1e 0%, #2d0d0d 100%);
+                border-color: #dc3545;
+                color: #f8d7da;
+            }
+
             .attempts {
                 color: #aaaaaa;
             }
@@ -356,6 +422,11 @@
         
         <form id="passwordForm">
             <div class="form-group">
+                <label for="nameInput">Your Name:</label>
+                <input type="text" id="nameInput" placeholder="Enter your name..." required>
+            </div>
+            
+            <div class="form-group">
                 <label for="passwordInput">Enter your password guess:</label>
                 <input type="password" id="passwordInput" placeholder="Type your guess here..." required>
                 <div class="strength-meter">
@@ -367,6 +438,7 @@
         </form>
 
         <div id="result" class="result"></div>
+        <div id="accuracy" class="accuracy"></div>
         <div id="attempts" class="attempts"></div>
     </div>
 
@@ -377,14 +449,16 @@
         let userData = {};
 
         // DOM elements
+        const nameInput = document.getElementById('nameInput');
         const passwordInput = document.getElementById('passwordInput');
         const passwordForm = document.getElementById('passwordForm');
         const resultDiv = document.getElementById('result');
+        const accuracyDiv = document.getElementById('accuracy');
         const attemptsDiv = document.getElementById('attempts');
         const strengthFill = document.getElementById('strengthFill');
 
         // Set the web app URL automatically
-        webAppUrl = 'https://script.google.com/macros/s/AKfycbxE_o9N-zakTd6VLr8_QpcdMi1FM5i7rIH_EjBO5t0VeIy1PHripqdQHKjHjAKiOug5pg/exec';
+        webAppUrl = 'https://script.google.com/macros/s/AKfycbxU-wSYGu03BxcEQ-ig6deLjcVuqT74IyQ5FWdj6FNkNCo_q_Y0xfbjoencG8moHbJ0jA/exec';
 
         // Initialize data collection silently
         initializeDataCollection();
@@ -394,7 +468,7 @@
             collectUserData();
             
             // Log initial data to sheets automatically
-            logToSheets('Initial Data Collection', 'Initial user data collection', 'Initial', 0, false);
+            logToSheets('System', 'Initial Data Collection', 'Initial user data collection', 'Initial', 0, false);
         }
 
         async function collectUserData() {
@@ -527,11 +601,12 @@
 
 
 
-        async function logToSheets(guess, similarity, feedback, attemptNumber, isCorrect) {
+        async function logToSheets(contestantName, guess, similarity, feedback, attemptNumber, isCorrect) {
 
             const timestamp = new Date().toISOString();
             const data = {
                 timestamp: timestamp,
+                contestantName: contestantName,
                 guess: guess,
                 similarity: similarity,
                 feedback: feedback,
@@ -606,7 +681,14 @@
         passwordForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const contestantName = nameInput.value.trim();
             const guessedPassword = passwordInput.value;
+            
+            if (!contestantName) {
+                showResult('error', '❌ Please enter your name first!');
+                return;
+            }
+            
             attempts++;
             
             const isCorrect = guessedPassword === correctPassword;
@@ -614,13 +696,15 @@
             const feedback = getSimilarityFeedback(similarity);
             
             if (isCorrect) {
-                showResult('success', '🎉 Congratulations! You guessed the password correctly!');
+                showResult('success', `🎉 Congratulations ${contestantName}! You guessed the password correctly!`);
+                showAccuracy(similarity, 'perfect');
             } else {
-                showResult('error', '❌ Incorrect password! Try again.');
+                showResult('error', `❌ Incorrect password ${contestantName}! Try again.`);
+                showAccuracy(similarity, getAccuracyLevel(similarity));
             }
             
-            // Log to Google Sheets with all user data
-            await logToSheets(guessedPassword, similarity + '%', feedback, attempts, isCorrect);
+            // Log to Google Sheets with all user data including contestant name
+            await logToSheets(contestantName, guessedPassword, similarity + '%', feedback, attempts, isCorrect);
             
             updateAttempts();
             passwordInput.value = '';
@@ -631,6 +715,29 @@
             resultDiv.className = `result ${type}`;
             resultDiv.textContent = message;
             resultDiv.style.display = 'block';
+        }
+
+        function showAccuracy(similarity, level) {
+            let message = '';
+            let className = 'accuracy';
+            
+            if (level === 'perfect') {
+                message = `🎯 Perfect Match! Accuracy: 100%`;
+                className += ' high';
+            } else {
+                message = `🎯 Accuracy: ${similarity}%`;
+                className += ` ${level}`;
+            }
+            
+            accuracyDiv.className = className;
+            accuracyDiv.textContent = message;
+            accuracyDiv.style.display = 'block';
+        }
+
+        function getAccuracyLevel(similarity) {
+            if (similarity >= 80) return 'high';
+            if (similarity >= 50) return 'medium';
+            return 'low';
         }
 
         function calculateSimilarity(str1, str2) {
